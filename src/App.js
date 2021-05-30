@@ -1,24 +1,70 @@
-import logo from './logo.svg';
+
+import {useState} from "react";
+import {NavLink, BrowserRouter as Router, Switch, Route, Redirect} from "react-router-dom";
+import Home from "./containers/Home";
+import Users from "./containers/Users";
+import About from "./containers/About";
+import NotFound from "./containers/NotFound";
 import './App.css';
 
-function App() {
+
+function Navigation({loggedIn}) {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ul>
+      <li>
+        <NavLink exact to="/" activeStyle={{color: "red"}}>Home</NavLink>
+      </li>
+      {
+        loggedIn && (
+          <li>
+            <NavLink exact to="/users" activeStyle={{color: "red"}}>Users</NavLink>
+          </li>
+        )
+      }
+      <li>
+        <NavLink exact  to="/about" activeStyle={{color: "red"}}>About</NavLink>
+      </li>
+    </ul>
+  )
+}
+
+function PrivateRoute({component: Component, loggedIn, ...rest}) {
+  return (
+    <Route {...rest}>
+      {
+        loggedIn ? <Component /> : <Redirect to="/" />
+      }
+    </Route>
+  )
+}
+
+function App() {
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  const authenticate = () => setLoggedIn(!loggedIn);
+
+  return (
+    <Router>
+      <div className="app">
+        <button onClick={authenticate}>
+          {loggedIn ? "Sign out" : "Sign in"}
+        </button>
+        <Navigation loggedIn={loggedIn}/>
+        <hr/>
+        <Switch>
+          <Route exact path='/'>
+            <Home />
+          </Route>
+          <PrivateRoute path="/users" component={Users} loggedIn={loggedIn}/>
+          <Route path='/about'>
+            <About />
+          </Route>
+          <Route>
+            <NotFound />
+          </Route>
+        </Switch>
+      </div>
+    </Router>
   );
 }
 
